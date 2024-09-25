@@ -15,9 +15,9 @@ class ExerciseViewModel : ViewModel() {
         // TODO: Replace with actual data loading
         viewModelScope.launch {
             _exercises.value = listOf(
-                Exercise(1, "Bench Press"),
-                Exercise(2, "Squat"),
-                Exercise(3, "Deadlift")
+                Exercise(1, "Bench Press", 2.5),
+                Exercise(2, "Squat", 2.5),
+                Exercise(3, "Deadlift", 2.5)
             )
         }
     }

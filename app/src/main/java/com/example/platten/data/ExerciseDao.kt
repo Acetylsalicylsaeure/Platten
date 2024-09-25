@@ -13,4 +13,8 @@ interface ExerciseDao {
 
     @Delete
     suspend fun deleteExercise(exercise: Exercise)
+
+    // Updated to use camelCase in Kotlin, while keeping snake_case in SQL
+    @Query("UPDATE exercises SET weight_steps = :weightSteps WHERE id = :id")
+    suspend fun updateExerciseWeightSteps(id: Int, weightSteps: Float)
 }
