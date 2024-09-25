@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.platten.data.ThemePreferences
 import com.example.platten.ui.screens.MainScreen
 import com.example.platten.ui.screens.SettingsScreen
+import com.example.platten.ui.screens.ColorSettingsScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,5 +30,6 @@ fun PlattenApp() {
     NavHost(navController = navController, startDestination = "main") {
         composable("main") { MainScreen(navController) }
         composable("settings") { SettingsScreen(navController) }
+        composable("settings/colors") { ColorSettingsScreen(navController) }
     }
 }
