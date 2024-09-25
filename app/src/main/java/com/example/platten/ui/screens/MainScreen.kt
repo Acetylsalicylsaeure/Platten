@@ -39,13 +39,13 @@ fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = view
                 .padding(innerPadding)
         ) {
             LazyColumn(
-                contentPadding = innerPadding,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.weight(1f)
             ) {
                 items(exercises) { exercise ->
                     ExerciseItem(exercise = exercise)
                 }
             }
+
         }
     }
 }
