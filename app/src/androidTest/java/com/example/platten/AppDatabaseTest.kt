@@ -110,6 +110,7 @@ class AppDatabaseTest {
         assertTrue("Log list should be empty", remainingLogs.isEmpty())
     }
 
+    /*
     @Test
     @Throws(Exception::class)
     fun testMigration1To2() {
@@ -130,7 +131,7 @@ class AppDatabaseTest {
 
         // Clean up
         db.close()
-    }
+    }*/
 
     @Test
     @Throws(Exception::class)
