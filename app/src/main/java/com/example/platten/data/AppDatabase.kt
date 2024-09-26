@@ -18,7 +18,7 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        val MIGRATION_1_2 = object : Migration(1, 2) {
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE exercises ADD COLUMN weight_steps FLOAT NOT NULL DEFAULT 0.0")
             }
@@ -32,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "platten_database"
                 )
                     .addMigrations(MIGRATION_1_2)
+                    .addCallback(DatabaseInitializer(context.applicationContext))
                     .build()
                 INSTANCE = instance
                 instance

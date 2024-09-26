@@ -1,24 +1,40 @@
 package com.example.platten.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.platten.data.AppDatabase
 import com.example.platten.data.Exercise
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.platten.data.ExerciseRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ExerciseViewModel : ViewModel() {
-    private val _exercises = MutableStateFlow<List<Exercise>>(emptyList())
-    val exercises: StateFlow<List<Exercise>> = _exercises
+class ExerciseViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: ExerciseRepository
+    val exercises: StateFlow<List<Exercise>>
 
     init {
-        // TODO: Replace with actual data loading
+        val database = AppDatabase.getDatabase(application)
+        val exerciseDao = database.exerciseDao()
+        val exerciseLogDao = database.exerciseLogDao()
+        repository = ExerciseRepository(exerciseDao, exerciseLogDao)
+        exercises = repository.allExercises.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
+    }
+
+    fun addExercise(name: String, weightSteps: Double) {
         viewModelScope.launch {
-            _exercises.value = listOf(
-                Exercise(1, "Bench Press", 2.5),
-                Exercise(2, "Squat", 2.5),
-                Exercise(3, "Deadlift", 2.5)
+            val newExercise = Exercise(
+                id = 0, // Room will auto-generate the ID
+                name = name,
+                weightSteps = weightSteps
             )
+            repository.insertExercise(newExercise)
         }
     }
 }
