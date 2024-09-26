@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.platten.data.AppDatabase
 import com.example.platten.data.Exercise
 import com.example.platten.data.ExerciseRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -36,5 +37,9 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
             )
             repository.insertExercise(newExercise)
         }
+    }
+
+    fun getExerciseById(id: Int): Flow<Exercise?> {
+        return repository.getExerciseById(id)
     }
 }

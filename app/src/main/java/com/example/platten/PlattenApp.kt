@@ -10,6 +10,7 @@ import com.example.platten.data.ThemePreferences
 import com.example.platten.ui.screens.MainScreen
 import com.example.platten.ui.screens.SettingsScreen
 import com.example.platten.ui.screens.ColorSettingsScreen
+import com.example.platten.ui.screens.ExerciseDetailScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,5 +32,9 @@ fun PlattenApp() {
         composable("main") { MainScreen(navController) }
         composable("settings") { SettingsScreen(navController) }
         composable("settings/colors") { ColorSettingsScreen(navController) }
+        composable("exercise/{exerciseId}") { backStackEntry ->
+            val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull() ?: return@composable
+            ExerciseDetailScreen(navController, exerciseId)
+        }
     }
 }

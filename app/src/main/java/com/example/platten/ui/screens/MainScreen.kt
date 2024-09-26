@@ -49,7 +49,10 @@ fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = view
                 modifier = Modifier.weight(1f)
             ) {
                 items(exercises) { exercise ->
-                    ExerciseItem(exercise = exercise)
+                    ExerciseItem(
+                        exercise = exercise,
+                        onClick = { navController.navigate("exercise/${exercise.id}") }
+                        )
                 }
             }
         }

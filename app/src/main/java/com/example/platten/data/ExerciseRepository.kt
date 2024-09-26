@@ -16,6 +16,10 @@ class ExerciseRepository(
         exerciseDao.deleteExercise(exercise)
     }
 
+    fun getExerciseById(id: Int): Flow<Exercise?> {
+        return exerciseDao.getExerciseById(id)
+    }
+
     fun getLogsForExercise(exerciseId: Int): Flow<List<ExerciseLog>> {
         return exerciseLogDao.getLogsForExercise(exerciseId)
     }
