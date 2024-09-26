@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.platten.data.AppDatabase
 import com.example.platten.data.Exercise
+import com.example.platten.data.ExerciseLog
 import com.example.platten.data.ExerciseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,5 +42,15 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
 
     fun getExerciseById(id: Int): Flow<Exercise?> {
         return repository.getExerciseById(id)
+    }
+
+    fun insertLog(log: ExerciseLog) {
+        viewModelScope.launch {
+            repository.insertLog(log)
+        }
+    }
+
+    fun getLogsForExercise(exerciseId: Int): Flow<List<ExerciseLog>> {
+        return repository.getLogsForExercise(exerciseId)
     }
 }
