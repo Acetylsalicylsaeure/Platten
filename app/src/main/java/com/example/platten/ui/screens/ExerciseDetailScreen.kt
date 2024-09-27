@@ -1,5 +1,6 @@
 package com.example.platten.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,12 +44,14 @@ fun ExerciseDetailScreen(
     val weightedRegression by viewModel.weightedRegressionFlow.collectAsState(initial = false)
     val regressionWindow by viewModel.regressionWindowFlow.collectAsState(initial = 0)
 
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedLog by remember { mutableStateOf<ExerciseLog?>(null) }
+
     val regression by remember(logs.value, weightedRegression, regressionWindow) {
         derivedStateOf {
             viewModel.calculateRegression(logs.value, weightedRegression, regressionWindow)
         }
     }
-
 
     Scaffold(
         topBar = {
@@ -130,7 +133,8 @@ fun ExerciseDetailScreen(
                             .height(280.dp)
                             .padding(vertical = 8.dp)
                     ) {
-                        WeightProgressChart(logs.value.map { Triple(it.exerciseId, it.weight, it.reps) },
+                        WeightProgressChart(
+                            logs.value.map { Triple(it.exerciseId, it.weight, it.reps) },
                             viewWindow = viewWindow,
                             regression = regression
                         )
@@ -144,11 +148,29 @@ fun ExerciseDetailScreen(
                 }
 
                 items(logs.value.sortedByDescending { it.date }) { log ->
-                    ExerciseLogItem(log)
+                    ExerciseLogItem(log) {
+                        selectedLog = log
+                        showEditDialog = true
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             } ?: item { Text("Loading exercise details...") }
         }
+    }
+
+    if (showEditDialog) {
+        EditExerciseLogDialog(
+            log = selectedLog,
+            onDismiss = { showEditDialog = false },
+            onSave = { updatedLog ->
+                viewModel.updateLog(updatedLog)
+                showEditDialog = false
+            },
+            onDelete = { logToDelete ->
+                viewModel.deleteLog(logToDelete)
+                showEditDialog = false
+            }
+        )
     }
 }
 
@@ -242,16 +264,20 @@ fun RepsInputWithButtons(
     }
 }
 
-
 @Composable
-fun ExerciseLogItem(log: ExerciseLog) {
+fun ExerciseLogItem(log: ExerciseLog, onClick: () -> Unit) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        )
     ) {
         Row(
             modifier = Modifier
-                .padding(12.dp)
+                .padding(16.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -263,4 +289,62 @@ fun ExerciseLogItem(log: ExerciseLog) {
             }
         }
     }
+}
+
+@Composable
+fun EditExerciseLogDialog(
+    log: ExerciseLog?,
+    onDismiss: () -> Unit,
+    onSave: (ExerciseLog) -> Unit,
+    onDelete: (ExerciseLog) -> Unit
+) {
+    if (log == null) return
+
+    var weight by remember { mutableStateOf(log.weight.toString()) }
+    var reps by remember { mutableStateOf(log.reps.toString()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Exercise Log") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = weight,
+                    onValueChange = { weight = it },
+                    label = { Text("Weight") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = reps,
+                    onValueChange = { reps = it },
+                    label = { Text("Reps") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val updatedLog = log.copy(
+                        weight = weight.toFloatOrNull() ?: log.weight,
+                        reps = reps.toIntOrNull() ?: log.reps
+                    )
+                    onSave(updatedLog)
+                }
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                TextButton(onClick = { onDelete(log) }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
+    )
 }
