@@ -7,29 +7,43 @@ import com.example.platten.data.AppDatabase
 import com.example.platten.data.Exercise
 import com.example.platten.data.ExerciseLog
 import com.example.platten.data.ExerciseRepository
+import com.example.platten.data.Preferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.lang.Math.exp
 import java.util.Date
+import kotlin.math.ln
+import com.example.platten.ui.components.calculateEstimatedOneRM
 
 class ExerciseViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: ExerciseRepository
+    private val preferences: Preferences
     val exercises: StateFlow<List<Exercise>>
     val sortedExercisesWithLastTrained: StateFlow<List<Pair<Exercise, Date?>>>
+
+    val weightedRegressionFlow: Flow<Boolean>
+    val regressionWindowFlow: Flow<Int>
 
     init {
         val database = AppDatabase.getDatabase(application)
         val exerciseDao = database.exerciseDao()
         val exerciseLogDao = database.exerciseLogDao()
         repository = ExerciseRepository(exerciseDao, exerciseLogDao)
+        preferences = Preferences(application)
+
+        weightedRegressionFlow = preferences.weightedRegressionFlow
+        regressionWindowFlow = preferences.regressionWindowFlow
+
         exercises = repository.allExercises.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             emptyList()
         )
+
 
         sortedExercisesWithLastTrained = combine(
             exercises,
@@ -96,5 +110,42 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             repository.deleteLog(log)
         }
+    }
+
+    // regression part
+
+
+    fun calculateRegression(logs: List<ExerciseLog>, weightedRegression: Boolean, regressionWindow: Int): Pair<Double, Double>? {
+        if (logs.isEmpty()) return null
+
+        val filteredLogs = if (regressionWindow > 0) {
+            logs.takeLast(regressionWindow)
+        } else {
+            logs
+        }
+
+        val n = filteredLogs.size
+        var sumX = 0.0
+        var sumY = 0.0
+        var sumXY = 0.0
+        var sumX2 = 0.0
+        var sumWeights = 0.0
+
+        filteredLogs.forEachIndexed { index, log ->
+            val x = index.toDouble()
+            val y = ln(calculateEstimatedOneRM(log.weight, log.reps))
+            val weight = if (weightedRegression) exp(x / n) else 1.0
+
+            sumX += x * weight
+            sumY += y * weight
+            sumXY += x * y * weight
+            sumX2 += x * x * weight
+            sumWeights += weight
+        }
+
+        val slope = (sumWeights * sumXY - sumX * sumY) / (sumWeights * sumX2 - sumX * sumX)
+        val intercept = (sumY - slope * sumX) / sumWeights
+
+        return Pair(slope, intercept)
     }
 }

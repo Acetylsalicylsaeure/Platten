@@ -1,5 +1,6 @@
 package com.example.platten.ui.components
 
+import android.graphics.Color
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,18 +15,27 @@ import com.github.mikephil.charting.charts.ScatterChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.ScatterData
 import com.github.mikephil.charting.data.ScatterDataSet
+import com.github.mikephil.charting.charts.CombinedChart;
+import com.github.mikephil.charting.data.CombinedData;
+import com.github.mikephil.charting.data.LineData
 
 @Composable
-fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>, viewWindow: Int) {
+fun WeightProgressChart(
+    logs: List<Triple<Int, Float, Int>>,
+    viewWindow: Int,
+    regression: Pair<Double, Double>?
+) {
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+    val secondaryColor= MaterialTheme.colorScheme.secondary.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { context ->
-                ScatterChart(context).apply {
+                CombinedChart(context).apply {
                     description.isEnabled = false
                     setTouchEnabled(true)
                     isDragEnabled = true
@@ -65,14 +75,39 @@ fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>, viewWindow: Int) {
                     val estimatedOneRM = calculateEstimatedOneRM(weight, reps)
                     Entry(index.toFloat(), estimatedOneRM)
                 }
-                val dataSet = ScatterDataSet(entries, "Estimated 1RM Progress").apply {
+                val scatterDataSet = ScatterDataSet(entries, "Estimated 1RM Progress").apply {
                     setDrawValues(false)
                     color = primaryColor
                     setScatterShape(ScatterChart.ScatterShape.CIRCLE)
                     scatterShapeSize = 12f
                 }
-                val scatterData = ScatterData(dataSet)
-                chart.data = scatterData
+                val scatterData = ScatterData(scatterDataSet)
+
+                // Create CombinedData
+                val combinedData = CombinedData()
+                combinedData.setData(scatterData)
+
+                // Add linear regression if available
+                regression?.let { (slope, intercept) ->
+                    val regressionEntries = entries.mapIndexed { index, _ ->
+                        val y = (slope * index + intercept).toFloat()
+                        Entry(index.toFloat(), y)
+                    }
+
+                    val regressionDataSet = LineDataSet(regressionEntries, "Regression").apply {
+                        color = secondaryColor
+                        lineWidth = 2f
+                        setDrawCircles(false)
+                        setDrawValues(false)
+                        enableDashedLine(10f, 5f, 0f)
+                    }
+
+                    val lineData = LineData(regressionDataSet)
+                    combinedData.setData(lineData)
+                }
+
+                // Set the combined data to the chart
+                chart.data = combinedData
 
                 // Add padding to X-axis
                 val xPadding = 0.5f
@@ -109,7 +144,7 @@ fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>, viewWindow: Int) {
         )
 
         Text(
-            text = "Session",
+            text = "Session             ",
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier
                 .align(Alignment.BottomCenter)

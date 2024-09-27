@@ -40,6 +40,15 @@ fun ExerciseDetailScreen(
     val context = LocalContext.current
     val preferences = remember { Preferences(context) }
     val viewWindow by preferences.viewWindowFlow.collectAsState(initial = 0)
+    val weightedRegression by viewModel.weightedRegressionFlow.collectAsState(initial = false)
+    val regressionWindow by viewModel.regressionWindowFlow.collectAsState(initial = 0)
+
+    val regression by remember(logs.value, weightedRegression, regressionWindow) {
+        derivedStateOf {
+            viewModel.calculateRegression(logs.value, weightedRegression, regressionWindow)
+        }
+    }
+
 
     Scaffold(
         topBar = {
@@ -122,7 +131,9 @@ fun ExerciseDetailScreen(
                             .padding(vertical = 8.dp)
                     ) {
                         WeightProgressChart(logs.value.map { Triple(it.exerciseId, it.weight, it.reps) },
-                            viewWindow = viewWindow)
+                            viewWindow = viewWindow,
+                            regression = regression
+                        )
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
