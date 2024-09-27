@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -38,39 +39,54 @@ fun ColorSettingsScreen(navController: NavController) {
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(16.dp)
+                .fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Dark Mode")
-                Switch(
-                    checked = darkMode,
+            SettingsSwitch(
+                title = "Dark Mode",
+                checked = darkMode,
+                onCheckedChange = {
+                    scope.launch {
+                        themePreferences.setDarkMode(it)
+                    }
+                }
+            )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                Spacer(modifier = Modifier.height(16.dp))
+                SettingsSwitch(
+                    title = "Dynamic Colors",
+                    checked = dynamicColor,
                     onCheckedChange = {
                         scope.launch {
-                            themePreferences.setDarkMode(it)
+                            themePreferences.setDynamicColor(it)
                         }
                     }
                 )
             }
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Dynamic Colors")
-                    Switch(
-                        checked = dynamicColor,
-                        onCheckedChange = {
-                            scope.launch {
-                                themePreferences.setDynamicColor(it)
-                            }
-                        }
-                    )
-                }
-            }
         }
+    }
+}
+
+@Composable
+fun SettingsSwitch(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
     }
 }
