@@ -1,6 +1,8 @@
 package com.example.platten.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import java.util.Date
 
 class ExerciseRepository(
     private val exerciseDao: ExerciseDao,
@@ -10,6 +12,10 @@ class ExerciseRepository(
 
     suspend fun insertExercise(exercise: Exercise) {
         exerciseDao.insertExercise(exercise)
+    }
+
+    suspend fun updateExercise(exercise: Exercise) {
+        exerciseDao.updateExercise(exercise)
     }
 
     suspend fun deleteExercise(exercise: Exercise) {
@@ -30,5 +36,11 @@ class ExerciseRepository(
 
     suspend fun deleteLog(log: ExerciseLog) {
         exerciseLogDao.deleteLog(log)
+    }
+
+    fun getLastTrainedDates(): Flow<Map<Int, Date?>> {
+        return exerciseLogDao.getLastTrainedDates().map { logs ->
+            logs.associate { it.exerciseId to it.lastTrainedDate }
+        }
     }
 }

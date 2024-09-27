@@ -5,21 +5,27 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.platten.data.Exercise
 import com.example.platten.ui.components.ExerciseItem
 import com.example.platten.viewmodel.ExerciseViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = viewModel()) {
-    val exercises by viewModel.exercises.collectAsState()
+    val sortedExercisesWithLastTrained by viewModel.sortedExercisesWithLastTrained.collectAsState()
     var showAddExerciseDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
 
     Scaffold(
         topBar = {
@@ -48,11 +54,16 @@ fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = view
             LazyColumn(
                 modifier = Modifier.weight(1f)
             ) {
-                items(exercises) { exercise ->
+                items(sortedExercisesWithLastTrained) { (exercise, lastTrainedDate) ->
                     ExerciseItem(
                         exercise = exercise,
-                        onClick = { navController.navigate("exercise/${exercise.id}") }
-                        )
+                        lastTrainedDate = lastTrainedDate,
+                        onClick = { navController.navigate("exercise/${exercise.id}") },
+                        onLongClick = {
+                            selectedExercise = exercise
+                            showEditDialog = true
+                        }
+                    )
                 }
             }
         }
@@ -67,7 +78,25 @@ fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = view
             }
         )
     }
+
+    if (showEditDialog) {
+        EditExerciseDialog(
+            exercise = selectedExercise,
+            onDismiss = { showEditDialog = false },
+            onSave = { updatedExercise ->
+                viewModel.updateExercise(updatedExercise)
+                showEditDialog = false
+            },
+            onDelete = {
+                selectedExercise?.let { exercise ->
+                    viewModel.deleteExercise(exercise)
+                    showEditDialog = false
+                }
+            }
+        )
+    }
 }
+
 
 @Composable
 fun AddExerciseDialog(onDismiss: () -> Unit, onConfirm: (String, Double) -> Unit) {
@@ -108,4 +137,96 @@ fun AddExerciseDialog(onDismiss: () -> Unit, onConfirm: (String, Double) -> Unit
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditExerciseDialog(
+    exercise: Exercise?,
+    onDismiss: () -> Unit,
+    onSave: (Exercise) -> Unit,
+    onDelete: () -> Unit
+) {
+    if (exercise == null) return
+
+    var name by remember { mutableStateOf(exercise.name) }
+    var weightSteps by remember { mutableStateOf(exercise.weightSteps.toString()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = 2.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                // Top app bar with back arrow
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                    Text(
+                        "Edit Exercise",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Exercise name input
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Exercise Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Weight steps input
+                OutlinedTextField(
+                    value = weightSteps,
+                    onValueChange = { weightSteps = it },
+                    label = { Text("Weight Steps") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Action buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = onDelete,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Delete")
+                    }
+                    Button(
+                        onClick = {
+                            onSave(exercise.copy(
+                                name = name,
+                                weightSteps = weightSteps.toDoubleOrNull() ?: exercise.weightSteps
+                            ))
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                }
+            }
+        }
+    }
 }
