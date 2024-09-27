@@ -115,7 +115,7 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
     // regression part
 
 
-    fun calculateRegression(logs: List<ExerciseLog>, weightedRegression: Boolean, regressionWindow: Int): Pair<Double, Double>? {
+    fun calculateLinearRegression(logs: List<ExerciseLog>, weightedRegression: Boolean, regressionWindow: Int): Pair<Double, Double>? {
         if (logs.isEmpty()) return null
 
         val filteredLogs = if (regressionWindow > 0) {
@@ -133,8 +133,8 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
 
         filteredLogs.forEachIndexed { index, log ->
             val x = index.toDouble()
-            val y = ln(calculateEstimatedOneRM(log.weight, log.reps))
-            val weight = if (weightedRegression) exp(x / n) else 1.0
+            val y = calculateEstimatedOneRM(log.weight, log.reps)
+            val weight = if (weightedRegression) (index + 1.0) / n else 1.0
 
             sumX += x * weight
             sumY += y * weight

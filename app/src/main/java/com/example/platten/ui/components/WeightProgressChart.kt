@@ -26,10 +26,11 @@ import com.github.mikephil.charting.data.LineData
 fun WeightProgressChart(
     logs: List<Triple<Int, Float, Int>>,
     viewWindow: Int,
-    regression: Pair<Double, Double>?
+    regression: Pair<Double, Double>?,
+    fitToLastSession: Boolean
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
-    val secondaryColor= MaterialTheme.colorScheme.secondary.toArgb()
+    val secondaryColor = MaterialTheme.colorScheme.secondary.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -89,8 +90,16 @@ fun WeightProgressChart(
 
                 // Add linear regression if available
                 regression?.let { (slope, intercept) ->
+                    var adjustment = 0f
+                    if (fitToLastSession && entries.isNotEmpty()) {
+                        val lastIndex = entries.size - 1
+                        val lastActualValue = entries.last().y
+                        val lastPredictedValue = (slope * lastIndex + intercept).toFloat()
+                        adjustment = lastActualValue - lastPredictedValue
+                    }
+
                     val regressionEntries = entries.mapIndexed { index, _ ->
-                        val y = (slope * index + intercept).toFloat()
+                        val y = (slope * index + intercept).toFloat() + adjustment
                         Entry(index.toFloat(), y)
                     }
 

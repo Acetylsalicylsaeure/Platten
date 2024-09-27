@@ -43,13 +43,14 @@ fun ExerciseDetailScreen(
     val viewWindow by preferences.viewWindowFlow.collectAsState(initial = 0)
     val weightedRegression by viewModel.weightedRegressionFlow.collectAsState(initial = false)
     val regressionWindow by viewModel.regressionWindowFlow.collectAsState(initial = 0)
+    val fitToLastSession by  preferences.fitToLastSessionFlow.collectAsState(initial = true)
 
     var showEditDialog by remember { mutableStateOf(false) }
     var selectedLog by remember { mutableStateOf<ExerciseLog?>(null) }
 
     val regression by remember(logs.value, weightedRegression, regressionWindow) {
         derivedStateOf {
-            viewModel.calculateRegression(logs.value, weightedRegression, regressionWindow)
+            viewModel.calculateLinearRegression(logs.value, weightedRegression, regressionWindow)
         }
     }
 
@@ -136,7 +137,8 @@ fun ExerciseDetailScreen(
                         WeightProgressChart(
                             logs.value.map { Triple(it.exerciseId, it.weight, it.reps) },
                             viewWindow = viewWindow,
-                            regression = regression
+                            regression = regression,
+                            fitToLastSession = fitToLastSession
                         )
                     }
                     Spacer(modifier = Modifier.height(24.dp))
