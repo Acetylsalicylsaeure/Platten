@@ -18,7 +18,7 @@ import com.github.mikephil.charting.data.ScatterData
 import com.github.mikephil.charting.data.ScatterDataSet
 
 @Composable
-fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>) {
+fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>, viewWindow: Int) {
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
 
@@ -52,11 +52,16 @@ fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>) {
                     axisRight.isEnabled = false
                     legend.isEnabled = false
                     setExtraOffsets(24f, 16f, 16f, 16f)
-
                 }
             },
             update = { chart ->
-                val entries = logs.mapIndexed { index, (_, weight, reps) ->
+                val filteredLogs = if (viewWindow > 0 && viewWindow < logs.size) {
+                    logs.takeLast(viewWindow)
+                } else {
+                    logs
+                }
+
+                val entries = filteredLogs.mapIndexed { index, (_, weight, reps) ->
                     val estimatedOneRM = calculateEstimatedOneRM(weight, reps)
                     Entry(index.toFloat(), estimatedOneRM)
                 }
@@ -68,6 +73,24 @@ fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>) {
                 }
                 val scatterData = ScatterData(dataSet)
                 chart.data = scatterData
+
+                // Add padding to X-axis
+                val xPadding = 0.5f
+                chart.xAxis.apply {
+                    axisMinimum = -xPadding
+                    axisMaximum = (entries.size - 1 + xPadding).toFloat()
+                    labelCount = entries.size.coerceAtMost(5)
+                }
+
+                // Add padding to Y-axis
+                val yMin = entries.minOfOrNull { it.y } ?: 0f
+                val yMax = entries.maxOfOrNull { it.y } ?: 100f
+                val yRange = yMax - yMin
+                val yPadding = yRange * 0.1f
+                chart.axisLeft.apply {
+                    axisMinimum = yMin - yPadding
+                    axisMaximum = yMax + yPadding
+                }
 
                 chart.invalidate()
             },

@@ -12,12 +12,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.platten.data.ExerciseLog
+import com.example.platten.data.Preferences
 import com.example.platten.ui.components.WeightProgressChart
 import com.example.platten.viewmodel.ExerciseViewModel
 import java.util.Date
@@ -35,6 +37,9 @@ fun ExerciseDetailScreen(
     val logs = viewModel.getLogsForExercise(exerciseId).collectAsState(initial = emptyList())
     var weight by remember { mutableStateOf("") }
     var reps by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val preferences = remember { Preferences(context) }
+    val viewWindow by preferences.viewWindowFlow.collectAsState(initial = 0)
 
     Scaffold(
         topBar = {
@@ -116,7 +121,8 @@ fun ExerciseDetailScreen(
                             .height(280.dp)
                             .padding(vertical = 8.dp)
                     ) {
-                        WeightProgressChart(logs.value.map { Triple(it.exerciseId, it.weight, it.reps) })
+                        WeightProgressChart(logs.value.map { Triple(it.exerciseId, it.weight, it.reps) },
+                            viewWindow = viewWindow)
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
