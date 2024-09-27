@@ -11,17 +11,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.platten.data.ThemePreferences
+import com.example.platten.data.Preferences
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorSettingsScreen(navController: NavController) {
     val context = LocalContext.current
-    val themePreferences = remember { ThemePreferences(context) }
+    val preferences = remember { Preferences(context) }
     val scope = rememberCoroutineScope()
-    val darkMode by themePreferences.darkModeFlow.collectAsState(initial = false)
-    val dynamicColor by themePreferences.dynamicColorFlow.collectAsState(initial = true)
+    val darkMode by preferences.darkModeFlow.collectAsState(initial = false)
+    val dynamicColor by preferences.dynamicColorFlow.collectAsState(initial = true)
 
     Scaffold(
         topBar = {
@@ -46,7 +46,7 @@ fun ColorSettingsScreen(navController: NavController) {
                 checked = darkMode,
                 onCheckedChange = {
                     scope.launch {
-                        themePreferences.setDarkMode(it)
+                        preferences.setDarkMode(it)
                     }
                 }
             )
@@ -58,7 +58,7 @@ fun ColorSettingsScreen(navController: NavController) {
                     checked = dynamicColor,
                     onCheckedChange = {
                         scope.launch {
-                            themePreferences.setDynamicColor(it)
+                            preferences.setDynamicColor(it)
                         }
                     }
                 )

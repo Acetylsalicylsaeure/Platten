@@ -6,7 +6,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.platten.data.ThemePreferences
+import com.example.platten.data.Preferences
 import com.example.platten.ui.screens.MainScreen
 import com.example.platten.ui.screens.SettingsScreen
 import com.example.platten.ui.screens.ColorSettingsScreen
@@ -23,9 +23,9 @@ fun PlattenApp() {
 
     // Initialize theme preferences
     LaunchedEffect(Unit) {
-        val themePreferences = ThemePreferences(context)
+        val preferences = Preferences(context)
         CoroutineScope(Dispatchers.Default).launch {
-            themePreferences.initializeThemePreference()
+            preferences.initializeThemePreference()
         }
     }
 

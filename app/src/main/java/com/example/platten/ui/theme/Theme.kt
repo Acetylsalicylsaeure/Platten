@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import com.example.platten.data.ThemePreferences
+import com.example.platten.data.Preferences
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -35,9 +35,9 @@ fun PlattenTheme(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val themePreferences = ThemePreferences(context)
-    val isDarkMode by themePreferences.darkModeFlow.collectAsState(initial = isSystemInDarkTheme())
-    val useDynamicColor by themePreferences.dynamicColorFlow.collectAsState(initial = true)
+    val preferences = Preferences(context)
+    val isDarkMode by preferences.darkModeFlow.collectAsState(initial = isSystemInDarkTheme())
+    val useDynamicColor by preferences.dynamicColorFlow.collectAsState(initial = true)
 
     val colorScheme = when {
         useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
