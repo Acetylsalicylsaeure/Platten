@@ -12,6 +12,9 @@ interface ExerciseLogDao {
     @Insert
     suspend fun insertLog(log: ExerciseLog)
 
+    @Update
+    suspend fun updateLog(log: ExerciseLog)
+
     @Delete
     suspend fun deleteLog(log: ExerciseLog)
 

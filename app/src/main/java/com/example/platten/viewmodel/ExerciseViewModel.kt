@@ -85,4 +85,16 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
     fun getLastTrainedDates(): Flow<Map<Int, Date?>> {
         return repository.getLastTrainedDates()
     }
+
+    fun updateLog(log: ExerciseLog) {
+        viewModelScope.launch {
+            repository.updateLog(log)
+        }
+    }
+
+    fun deleteLog(log: ExerciseLog) {
+        viewModelScope.launch {
+            repository.deleteLog(log)
+        }
+    }
 }

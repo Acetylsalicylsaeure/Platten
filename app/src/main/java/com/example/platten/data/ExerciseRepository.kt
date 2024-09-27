@@ -34,6 +34,10 @@ class ExerciseRepository(
         exerciseLogDao.insertLog(log)
     }
 
+    suspend fun updateLog(log: ExerciseLog) {
+        exerciseLogDao.updateLog(log)
+    }
+
     suspend fun deleteLog(log: ExerciseLog) {
         exerciseLogDao.deleteLog(log)
     }

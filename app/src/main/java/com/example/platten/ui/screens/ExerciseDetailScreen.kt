@@ -1,5 +1,6 @@
 package com.example.platten.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,6 +32,8 @@ fun ExerciseDetailScreen(
     val logs = viewModel.getLogsForExercise(exerciseId).collectAsState(initial = emptyList())
     var weight by remember { mutableStateOf("") }
     var reps by remember { mutableStateOf("") }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedLog by remember { mutableStateOf<ExerciseLog?>(null) }
 
     Scaffold(
         topBar = {
@@ -52,9 +55,6 @@ fun ExerciseDetailScreen(
         ) {
             exercise.value?.let { ex ->
                 item {
-                    //Text("Name: ${ex.name}", style = MaterialTheme.typography.headlineSmall)
-                    //Spacer(modifier = Modifier.height(16.dp))
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -104,12 +104,8 @@ fun ExerciseDetailScreen(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    //Text("Weight Steps: ${ex.weightSteps}", style = MaterialTheme.typography.bodyLarge)
-
-                    //Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                // Weight Progress Chart
                 item {
                     Text("Estimated 1RM Progress", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -130,20 +126,100 @@ fun ExerciseDetailScreen(
                 }
 
                 items(logs.value.sortedByDescending { it.date }) { log ->
-                    ExerciseLogItem(log)
+                    ExerciseLogItem(log) {
+                        selectedLog = log
+                        showEditDialog = true
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             } ?: item { Text("Loading exercise details...") }
         }
     }
+
+    if (showEditDialog) {
+        EditExerciseLogDialog(
+            log = selectedLog,
+            onDismiss = { showEditDialog = false },
+            onSave = { updatedLog ->
+                viewModel.updateLog(updatedLog)
+                showEditDialog = false
+            },
+            onDelete = { logToDelete ->
+                viewModel.deleteLog(logToDelete)
+                showEditDialog = false
+            }
+        )
+    }
 }
 
 @Composable
-fun ExerciseLogItem(log: ExerciseLog) {
+fun EditExerciseLogDialog(
+    log: ExerciseLog?,
+    onDismiss: () -> Unit,
+    onSave: (ExerciseLog) -> Unit,
+    onDelete: (ExerciseLog) -> Unit
+) {
+    if (log == null) return
+
+    var weight by remember { mutableStateOf(log.weight.toString()) }
+    var reps by remember { mutableStateOf(log.reps.toString()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Exercise Log") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = weight,
+                    onValueChange = { weight = it },
+                    label = { Text("Weight") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = reps,
+                    onValueChange = { reps = it },
+                    label = { Text("Reps") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val updatedLog = log.copy(
+                        weight = weight.toFloatOrNull() ?: log.weight,
+                        reps = reps.toIntOrNull() ?: log.reps
+                    )
+                    onSave(updatedLog)
+                }
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                TextButton(onClick = { onDelete(log) }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun ExerciseLogItem(log: ExerciseLog, onClick: () -> Unit) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick),  // Add clickable modifier
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        )
     ) {
         Row(
             modifier = Modifier
