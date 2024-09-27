@@ -52,8 +52,8 @@ fun ExerciseDetailScreen(
         ) {
             exercise.value?.let { ex ->
                 item {
-                    Text("Name: ${ex.name}", style = MaterialTheme.typography.headlineSmall)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    //Text("Name: ${ex.name}", style = MaterialTheme.typography.headlineSmall)
+                    //Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -104,9 +104,9 @@ fun ExerciseDetailScreen(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Weight Steps: ${ex.weightSteps}", style = MaterialTheme.typography.bodyLarge)
+                    //Text("Weight Steps: ${ex.weightSteps}", style = MaterialTheme.typography.bodyLarge)
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    //Spacer(modifier = Modifier.height(24.dp))
                 }
 
                 // Weight Progress Chart

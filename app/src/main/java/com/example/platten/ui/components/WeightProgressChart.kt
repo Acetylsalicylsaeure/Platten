@@ -16,8 +16,6 @@ import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.ScatterData
 import com.github.mikephil.charting.data.ScatterDataSet
-import com.github.mikephil.charting.formatter.ValueFormatter
-import kotlin.math.roundToInt
 
 @Composable
 fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>) {
@@ -39,32 +37,22 @@ fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>) {
                         position = XAxis.XAxisPosition.BOTTOM
                         setDrawGridLines(false)
                         granularity = 1f
+                        labelCount = 5
                         setTextColor(textColor)
-                        valueFormatter = object : ValueFormatter() {
-                            override fun getFormattedValue(value: Float): String {
-                                return (value.toInt() + 1).toString()
-                            }
-                        }
                     }
 
                     axisLeft.apply {
                         setDrawGridLines(false)
                         setTextColor(textColor)
-                        valueFormatter = object : ValueFormatter() {
-                            override fun getFormattedValue(value: Float): String {
-                                return "${value.roundToInt()}"
-                            }
-                        }
+                        granularity = 1f
+                        labelCount = 6
                         setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
-                        setDrawLabels(true)
-                        setDrawZeroLine(true)
-                        setLabelCount(5, true)  // Set a fixed number of labels
                     }
 
                     axisRight.isEnabled = false
                     legend.isEnabled = false
+                    setExtraOffsets(24f, 16f, 16f, 16f)
 
-                    setExtraOffsets(32f, 16f, 16f, 16f)
                 }
             },
             update = { chart ->
@@ -81,19 +69,6 @@ fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>) {
                 val scatterData = ScatterData(dataSet)
                 chart.data = scatterData
 
-                // Calculate and set the y-axis range
-                val minOneRM = entries.minOfOrNull { it.y } ?: 0f
-                val maxOneRM = entries.maxOfOrNull { it.y } ?: 100f
-                val range = maxOneRM - minOneRM
-                val yMin = maxOf(0f, minOneRM - range * 0.1f)
-                val yMax = maxOneRM + range * 0.1f
-
-                chart.axisLeft.apply {
-                    axisMinimum = yMin
-                    axisMaximum = yMax
-                    granularity = ((yMax - yMin) / 4).coerceAtLeast(1f)  // Adjust granularity
-                }
-
                 chart.invalidate()
             },
             modifier = Modifier
@@ -102,12 +77,12 @@ fun WeightProgressChart(logs: List<Triple<Int, Float, Int>>) {
         )
 
         Text(
-            text = "Estimated 1RM (kg)",
+            text = "Estimated 1RM",
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .rotate(-90f)
-                .offset(y = (-32).dp)
+                .offset(y = (-24).dp)
         )
 
         Text(
