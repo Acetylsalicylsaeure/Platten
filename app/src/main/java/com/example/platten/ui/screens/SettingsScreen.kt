@@ -36,6 +36,10 @@ fun SettingsScreen(navController: NavController) {
                 title = "Colors",
                 onClick = { navController.navigate("settings/colors") }
             )
+            SettingsItem(
+                title = "Exercises",
+                onClick = { navController.navigate("settings/exercises") }
+            )
             // Add more settings items here as needed
         }
     }
