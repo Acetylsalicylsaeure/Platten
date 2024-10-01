@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -46,24 +47,35 @@ fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = view
             }
         }
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            LazyColumn(
-                modifier = Modifier.weight(1f)
-            ) {
-                items(sortedExercisesWithLastTrained) { (exercise, lastTrainedDate) ->
-                    ExerciseItem(
-                        exercise = exercise,
-                        lastTrainedDate = lastTrainedDate,
-                        onClick = { navController.navigate("exercise/${exercise.id}") },
-                        onLongClick = {
-                            selectedExercise = exercise
-                            showEditDialog = true
-                        }
-                    )
+            if (sortedExercisesWithLastTrained.isEmpty()) {
+                Text(
+                    text = "Click the + button to add an exercise!",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(sortedExercisesWithLastTrained) { (exercise, lastTrainedDate) ->
+                        ExerciseItem(
+                            exercise = exercise,
+                            lastTrainedDate = lastTrainedDate,
+                            onClick = { navController.navigate("exercise/${exercise.id}") },
+                            onLongClick = {
+                                selectedExercise = exercise
+                                showEditDialog = true
+                            }
+                        )
+                    }
                 }
             }
         }
