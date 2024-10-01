@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.platten"
+    namespace = "com.acetylsalicylsaeure.platten"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.platten"
+        applicationId = "com.acetylsalicylsaeure.platten"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
