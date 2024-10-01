@@ -21,6 +21,7 @@ import com.github.mikephil.charting.data.ScatterDataSet
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.LineData
+import kotlin.math.roundToInt
 
 @Composable
 fun WeightProgressChart(
@@ -164,4 +165,12 @@ fun WeightProgressChart(
 
 fun calculateEstimatedOneRM(weight: Float, reps: Int): Float {
     return weight * (36f / (37f - reps))
+}
+
+fun adjustWeightForReps(oneRM: Float, targetReps: Int): Float {
+    return oneRM * (37f - targetReps) / 36f
+}
+
+fun roundToNearestWeightStep(weight: Float, weightStep: Double): Float {
+    return (weight / weightStep).roundToInt() * weightStep.toFloat()
 }

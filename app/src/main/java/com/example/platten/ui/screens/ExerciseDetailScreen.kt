@@ -22,10 +22,14 @@ import androidx.navigation.NavController
 import com.example.platten.data.ExerciseLog
 import com.example.platten.data.Preferences
 import com.example.platten.ui.components.WeightProgressChart
+import com.example.platten.ui.components.adjustWeightForReps
+import com.example.platten.ui.components.roundToNearestWeightStep
 import com.example.platten.viewmodel.ExerciseViewModel
 import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.math.roundToInt
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,22 +40,51 @@ fun ExerciseDetailScreen(
 ) {
     val exercise = viewModel.getExerciseById(exerciseId).collectAsState(initial = null)
     val logs = viewModel.getLogsForExercise(exerciseId).collectAsState(initial = emptyList())
-    var weight by remember { mutableStateOf("") }
-    var reps by remember { mutableStateOf("") }
     val context = LocalContext.current
     val preferences = remember { Preferences(context) }
     val viewWindow by preferences.viewWindowFlow.collectAsState(initial = 0)
     val weightedRegression by viewModel.weightedRegressionFlow.collectAsState(initial = false)
     val regressionWindow by viewModel.regressionWindowFlow.collectAsState(initial = 0)
-    val fitToLastSession by  preferences.fitToLastSessionFlow.collectAsState(initial = true)
+    val fitToLastSession by preferences.fitToLastSessionFlow.collectAsState(initial = true)
 
     var showEditDialog by remember { mutableStateOf(false) }
     var selectedLog by remember { mutableStateOf<ExerciseLog?>(null) }
 
     val regression by remember(logs.value, weightedRegression, regressionWindow) {
         derivedStateOf {
-            viewModel.calculateLinearRegression(logs.value, weightedRegression, regressionWindow)
+            if (logs.value.size >= 2) {
+                viewModel.calculateLinearRegression(logs.value, weightedRegression, regressionWindow)
+            } else {
+                null
+            }
         }
+    }
+
+    // Calculate prefilled values
+    val lastLog = logs.value.maxByOrNull { it.date }
+    var reps by remember(lastLog) { mutableStateOf(lastLog?.reps?.toString() ?: "") }
+
+    val predictedOneRM = remember(logs.value, regression, fitToLastSession) {
+        regression?.let { (slope, intercept) ->
+            val x = if (fitToLastSession) logs.value.size.toDouble() else (logs.value.size + 1).toDouble()
+            slope * x + intercept
+        }
+    }
+
+    val calculatedWeight = remember(predictedOneRM, reps) {
+        predictedOneRM?.let { oneRM ->
+            val targetReps = reps.toIntOrNull() ?: lastLog?.reps ?: 0
+            adjustWeightForReps(oneRM.toFloat(), targetReps)
+        }
+    }
+
+    var weight by remember(calculatedWeight, exercise.value, lastLog) {
+        mutableStateOf(
+            calculatedWeight?.let { w ->
+                val weightStep = exercise.value?.weightSteps ?: 1.0
+                roundToNearestWeightStep(w, weightStep).toString()
+            } ?: lastLog?.weight?.toString() ?: ""
+        )
     }
 
     Scaffold(
@@ -89,11 +122,37 @@ fun ExerciseDetailScreen(
                             WeightInputWithButtons(
                                 weight = weight,
                                 onWeightChange = { weight = it },
-                                weightStep = ex.weightSteps
+                                weightStep = ex.weightSteps,
+                                onIncrement = {
+                                    weight = (weight.toFloatOrNull()?.plus(ex.weightSteps.toFloat()) ?: ex.weightSteps.toFloat()).toString()
+                                },
+                                onDecrement = {
+                                    weight = (weight.toFloatOrNull()?.minus(ex.weightSteps.toFloat())?.coerceAtLeast(0f) ?: 0f).toString()
+                                }
                             )
                             RepsInputWithButtons(
                                 reps = reps,
-                                onRepsChange = { reps = it }
+                                onRepsChange = { newReps ->
+                                    reps = newReps
+                                    calculatedWeight?.let { w ->
+                                        val weightStep = ex.weightSteps
+                                        weight = roundToNearestWeightStep(w, weightStep).toString()
+                                    }
+                                },
+                                onIncrement = {
+                                    reps = (reps.toIntOrNull()?.plus(1) ?: 1).toString()
+                                    calculatedWeight?.let { w ->
+                                        val weightStep = ex.weightSteps
+                                        weight = roundToNearestWeightStep(w, weightStep).toString()
+                                    }
+                                },
+                                onDecrement = {
+                                    reps = (reps.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0).toString()
+                                    calculatedWeight?.let { w ->
+                                        val weightStep = ex.weightSteps
+                                        weight = roundToNearestWeightStep(w, weightStep).toString()
+                                    }
+                                }
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
@@ -109,8 +168,11 @@ fun ExerciseDetailScreen(
                                         reps = repsValue
                                     )
                                     viewModel.insertLog(log)
-                                    weight = ""
-                                    reps = ""
+                                    // Recalculate weight based on new log
+                                    calculatedWeight?.let { w ->
+                                        val weightStep = ex.weightSteps
+                                        weight = roundToNearestWeightStep(w, weightStep).toString()
+                                    }
                                 }
                             },
                             modifier = Modifier
@@ -135,7 +197,7 @@ fun ExerciseDetailScreen(
                             .padding(vertical = 8.dp)
                     ) {
                         WeightProgressChart(
-                            logs.value.map { Triple(it.exerciseId, it.weight, it.reps) },
+                            logs = logs.value.map { Triple(it.exerciseId, it.weight, it.reps) },
                             viewWindow = viewWindow,
                             regression = regression,
                             fitToLastSession = fitToLastSession
@@ -182,6 +244,8 @@ fun WeightInputWithButtons(
     weight: String,
     onWeightChange: (String) -> Unit,
     weightStep: Double,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -189,10 +253,7 @@ fun WeightInputWithButtons(
         verticalAlignment = Alignment.CenterVertically
     ) {
         FilledTonalIconButton(
-            onClick = {
-                val currentWeight = weight.toFloatOrNull() ?: 0f
-                onWeightChange((currentWeight - weightStep.toFloat()).coerceAtLeast(0f).toString())
-            },
+            onClick = onDecrement,
             modifier = Modifier.size(48.dp)
         ) {
             Icon(Icons.Default.Remove, contentDescription = "Decrease Weight")
@@ -211,10 +272,7 @@ fun WeightInputWithButtons(
         )
         Spacer(modifier = Modifier.width(8.dp))
         FilledTonalIconButton(
-            onClick = {
-                val currentWeight = weight.toFloatOrNull() ?: 0f
-                onWeightChange((currentWeight + weightStep.toFloat()).toString())
-            },
+            onClick = onIncrement,
             modifier = Modifier.size(48.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = "Increase Weight")
@@ -227,6 +285,8 @@ fun WeightInputWithButtons(
 fun RepsInputWithButtons(
     reps: String,
     onRepsChange: (String) -> Unit,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -234,10 +294,7 @@ fun RepsInputWithButtons(
         verticalAlignment = Alignment.CenterVertically
     ) {
         FilledTonalIconButton(
-            onClick = {
-                val currentReps = reps.toIntOrNull() ?: 0
-                onRepsChange((currentReps - 1).coerceAtLeast(0).toString())
-            },
+            onClick = onDecrement,
             modifier = Modifier.size(48.dp)
         ) {
             Icon(Icons.Default.Remove, contentDescription = "Decrease Reps")
@@ -251,20 +308,19 @@ fun RepsInputWithButtons(
             modifier = Modifier
                 .weight(1f)
                 .width(IntrinsicSize.Min),
-            singleLine = true
+            singleLine = true,
+            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center)
         )
         Spacer(modifier = Modifier.width(8.dp))
         FilledTonalIconButton(
-            onClick = {
-                val currentReps = reps.toIntOrNull() ?: 0
-                onRepsChange((currentReps + 1).toString())
-            },
+            onClick = onIncrement,
             modifier = Modifier.size(48.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = "Increase Reps")
         }
     }
 }
+
 
 @Composable
 fun ExerciseLogItem(log: ExerciseLog, onClick: () -> Unit) {
