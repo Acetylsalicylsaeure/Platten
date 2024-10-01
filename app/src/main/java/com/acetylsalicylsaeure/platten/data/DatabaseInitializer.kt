@@ -25,8 +25,8 @@ class DatabaseInitializer(private val context: Context) : RoomDatabase.Callback(
             Exercise(4, "Overhead Press", 1.25),
             Exercise(5, "Barbell Row", 2.5)
         )
-        initialExercises.forEach { exercise ->
+        /*initialExercises.forEach { exercise ->
             exerciseDao.insertExercise(exercise)
-        }
+        }*/
     }
 }
