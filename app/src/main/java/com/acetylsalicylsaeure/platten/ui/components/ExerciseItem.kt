@@ -1,5 +1,7 @@
 package com.acetylsalicylsaeure.platten.ui.components
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -9,9 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.acetylsalicylsaeure.platten.data.Exercise
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.math.abs
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ExerciseItem(
@@ -53,15 +59,18 @@ fun ExerciseItem(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 private fun formatLastTrainedDays(date: Date?): String {
     return if (date != null) {
-        val currentDate = Date()
-        val diffInMillis = currentDate.time - date.time
-        val diffInDays = abs(diffInMillis / (24 * 60 * 60 * 1000))
+        val lastTrainedLocalDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+        val currentLocalDate = LocalDate.now()
+        val daysBetween = ChronoUnit.DAYS.between(lastTrainedLocalDate, currentLocalDate)
+
         when {
-            diffInDays == 0L -> "Trained today"
-            diffInDays == 1L -> "Trained yesterday"
-            else -> "Trained $diffInDays days ago"
+            daysBetween == 0L -> "Trained today"
+            daysBetween == 1L -> "Trained yesterday"
+            daysBetween > 1L -> "Trained $daysBetween days ago"
+            else -> "Date error" // This shouldn't happen unless there's a future date
         }
     } else {
         "Never trained"
