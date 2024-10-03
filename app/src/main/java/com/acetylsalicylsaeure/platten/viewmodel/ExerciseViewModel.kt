@@ -66,7 +66,10 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
                 name = name,
                 weightSteps = weightSteps
             )
-            repository.insertExercise(newExercise)
+            val insertedId = repository.insertExercise(newExercise)
+            if (insertedId == -1L) {
+                // Handle insertion failure (e.g., show an error message)
+            }
         }
     }
 

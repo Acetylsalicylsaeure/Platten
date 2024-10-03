@@ -10,8 +10,8 @@ class ExerciseRepository(
 ) {
     val allExercises: Flow<List<Exercise>> = exerciseDao.getAllExercises()
 
-    suspend fun insertExercise(exercise: Exercise) {
-        exerciseDao.insertExercise(exercise)
+    suspend fun insertExercise(exercise: Exercise): Long {
+        return exerciseDao.insertExercise(exercise)
     }
 
     suspend fun updateExercise(exercise: Exercise) {

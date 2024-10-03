@@ -6,7 +6,7 @@ import androidx.room.ColumnInfo
 
 @Entity(tableName = "exercises")
 data class Exercise(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    @ColumnInfo(name = "weight_steps") val weightSteps: Double // Kotlin property in camelCase, SQL column in snake_case
+    @ColumnInfo(name = "weight_steps") val weightSteps: Double
 )

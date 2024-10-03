@@ -11,8 +11,8 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE id = :id")
     fun getExerciseById(id: Int): Flow<Exercise?>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertExercise(exercise: Exercise)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertExercise(exercise: Exercise): Long
 
     @Update
     suspend fun updateExercise(exercise: Exercise)
@@ -23,4 +23,3 @@ interface ExerciseDao {
     @Query("UPDATE exercises SET weight_steps = :weightSteps WHERE id = :id")
     suspend fun updateExerciseWeightSteps(id: Int, weightSteps: Float)
 }
-
