@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -349,6 +350,8 @@ fun ExerciseLogItem(log: ExerciseLog, onClick: () -> Unit) {
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditExerciseLogDialog(
     log: ExerciseLog?,
@@ -360,6 +363,12 @@ fun EditExerciseLogDialog(
 
     var weight by remember { mutableStateOf(log.weight.toString()) }
     var reps by remember { mutableStateOf(log.reps.toString()) }
+    var date by remember { mutableStateOf(log.date) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val dateFormatter = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
+
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = date.time)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -370,14 +379,30 @@ fun EditExerciseLogDialog(
                     value = weight,
                     onValueChange = { weight = it },
                     label = { Text("Weight") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = reps,
                     onValueChange = { reps = it },
                     label = { Text("Reps") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = dateFormatter.format(date),
+                    onValueChange = { },
+                    label = { Text("Date") },
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = "Select date"
+                            )
+                        }
+                    },
+                    readOnly = true
                 )
             }
         },
@@ -386,7 +411,8 @@ fun EditExerciseLogDialog(
                 onClick = {
                     val updatedLog = log.copy(
                         weight = weight.toFloatOrNull() ?: log.weight,
-                        reps = reps.toIntOrNull() ?: log.reps
+                        reps = reps.toIntOrNull() ?: log.reps,
+                        date = date
                     )
                     onSave(updatedLog)
                 }
@@ -405,4 +431,35 @@ fun EditExerciseLogDialog(
             }
         }
     )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let {
+                            date = Date(it)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState
+            )
+        }
+    }
 }
