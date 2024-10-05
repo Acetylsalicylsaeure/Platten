@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.acetylsalicylsaeure.platten.data.Preferences
+import com.acetylsalicylsaeure.platten.ui.screens.BackupRestoreScreen
 import com.acetylsalicylsaeure.platten.ui.screens.MainScreen
 import com.acetylsalicylsaeure.platten.ui.screens.SettingsScreen
 import com.acetylsalicylsaeure.platten.ui.screens.ColorSettingsScreen
@@ -34,6 +35,7 @@ fun PlattenApp() {
         composable("settings") { SettingsScreen(navController) }
         composable("settings/colors") { ColorSettingsScreen(navController) }
         composable("settings/exercises") { ExercisesSettingsScreen(navController) }
+        composable("settings/backup-restore") { BackupRestoreScreen(navController) }
         composable("exercise/{exerciseId}") { backStackEntry ->
             val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull() ?: return@composable
             ExerciseDetailScreen(navController, exerciseId)

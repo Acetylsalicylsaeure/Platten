@@ -51,15 +51,17 @@ android {
 }
 
 dependencies {
-    implementation("androidx.databinding:databinding-adapters:8.6.1")
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.databinding:databinding-adapters:8.7.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.room:room-testing:2.6.1")
+    implementation("androidx.documentfile:documentfile:1.0.1")
+    implementation("com.google.ar:core:1.45.0")
     val navVersion = "2.7.7"
 
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation(platform("androidx.compose:compose-bom:2023.08.00"))
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
+    implementation("androidx.activity:activity-compose:1.9.2")
+    implementation(platform("androidx.compose:compose-bom:2024.09.03"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -69,13 +71,13 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$navVersion")
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.03"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+    implementation("androidx.compose.material:material-icons-extended:1.7.3")
 
     //Room
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
@@ -84,4 +86,18 @@ dependencies {
 
     //Charts
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    //Testing
+    testImplementation("junit:junit:4.13.2")
+    /*testImplementation("org.mockito:mockito-core:3.12.4")
+    testImplementation("org.mockito:mockito-inline:3.12.4")  // This allows mocking final classes
+    androidTestImplementation("org.mockito:mockito-core:3.12.4")
+    androidTestImplementation("org.mockito:mockito-inline:3.12.4")*/
+    androidTestImplementation("org.mockito:mockito-android:3.12.4")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.10")
+    testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation("androidx.test:core-ktx:1.6.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }

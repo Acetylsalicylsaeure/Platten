@@ -9,6 +9,9 @@ interface ExerciseLogDao {
     @Query("SELECT * FROM exercise_logs WHERE exerciseId = :exerciseId")
     fun getLogsForExercise(exerciseId: Int): Flow<List<ExerciseLog>>
 
+    @Query("SELECT * FROM exercise_logs")
+    suspend fun getAllLogsSync(): List<ExerciseLog>
+
     @Insert
     suspend fun insertLog(log: ExerciseLog)
 
@@ -17,6 +20,9 @@ interface ExerciseLogDao {
 
     @Delete
     suspend fun deleteLog(log: ExerciseLog)
+
+    @Query("DELETE FROM exercise_logs")
+    suspend fun deleteAllLogs()
 
     @Query("SELECT exerciseId, MAX(date) as lastTrainedDate FROM exercise_logs GROUP BY exerciseId")
     fun getLastTrainedDates(): Flow<List<LastTrainedDate>>
