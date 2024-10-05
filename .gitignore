@@ -1,7 +1,6 @@
 # custom
 .gradle
 .idea
-app
 
 # Compiled class file
 *.class
