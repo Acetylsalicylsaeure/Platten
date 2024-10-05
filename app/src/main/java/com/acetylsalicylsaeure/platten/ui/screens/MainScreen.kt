@@ -3,6 +3,7 @@ package com.acetylsalicylsaeure.platten.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
@@ -120,15 +122,16 @@ fun AddExerciseDialog(onDismiss: () -> Unit, onConfirm: (String, Double) -> Unit
         title = { Text("Add New Exercise") },
         text = {
             Column {
-                TextField(
+                OutlinedTextField(
                     value = exerciseName,
                     onValueChange = { exerciseName = it },
                     label = { Text("Exercise Name") }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                TextField(
+                OutlinedTextField(
                     value = weightSteps,
                     onValueChange = { weightSteps = it },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     label = { Text("Weight Steps") }
                 )
             }
@@ -211,6 +214,7 @@ fun EditExerciseDialog(
                     value = weightSteps,
                     onValueChange = { weightSteps = it },
                     label = { Text("Weight Steps") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
 
