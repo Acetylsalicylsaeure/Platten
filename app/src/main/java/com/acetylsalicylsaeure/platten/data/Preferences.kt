@@ -40,11 +40,13 @@ class Preferences(private val context: Context) {
         }
     }
 
-    suspend fun initializeThemePreference() {
+    suspend fun initializePreference() {
         context.dataStore.edit { preferences ->
             val isFirstTime = preferences[FIRST_TIME_KEY] ?: true
             if (isFirstTime) {
                 preferences[DARK_MODE_KEY] = isSystemInDarkTheme()
+                preferences[FIT_TO_LAST_SESSION_KEY] = true
+                preferences[WEIGHTED_REGRESSION_KEY] = true
                 preferences[FIRST_TIME_KEY] = false
             }
         }

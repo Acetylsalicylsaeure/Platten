@@ -26,7 +26,7 @@ fun PlattenApp() {
     LaunchedEffect(Unit) {
         val preferences = Preferences(context)
         CoroutineScope(Dispatchers.Default).launch {
-            preferences.initializeThemePreference()
+            preferences.initializePreference()
         }
     }
 

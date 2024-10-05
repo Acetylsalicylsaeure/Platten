@@ -51,19 +51,25 @@ class ExerciseDaoTest {
 
     @Test
     fun insertDuplicateExercise() = runTest {
-        val exercise1 = Exercise(1, "Squat", 2.5)
-        val exercise2 = Exercise(1, "Deadlift", 5.0)
+        val exercise1 = Exercise(name = "Squat", weightSteps = 2.5)
+        val exercise2 = Exercise(name = "Deadlift", weightSteps = 5.0)
 
         val id1 = exerciseDao.insertExercise(exercise1)
         assertTrue(id1 > 0)
 
         val id2 = exerciseDao.insertExercise(exercise2)
-        assertEquals(-1, id2) // Expect -1 for a failed insert due to duplicate ID
+        assertTrue(id2 > 0)
+        assertNotEquals(id1, id2)
 
-        val retrievedExercise = exerciseDao.getExerciseById(1).first()
-        assertNotNull(retrievedExercise)
-        assertEquals("Squat", retrievedExercise?.name) // Original exercise should remain
-        assertEquals(2.5, retrievedExercise?.weightSteps!!, 0.01)
+        val retrievedExercise1 = exerciseDao.getExerciseById(id1.toInt()).first()
+        assertNotNull(retrievedExercise1)
+        assertEquals("Squat", retrievedExercise1?.name)
+        assertEquals(2.5, retrievedExercise1?.weightSteps!!, 0.01)
+
+        val retrievedExercise2 = exerciseDao.getExerciseById(id2.toInt()).first()
+        assertNotNull(retrievedExercise2)
+        assertEquals("Deadlift", retrievedExercise2?.name)
+        assertEquals(5.0, retrievedExercise2?.weightSteps!!, 0.01)
     }
 
     @Test
