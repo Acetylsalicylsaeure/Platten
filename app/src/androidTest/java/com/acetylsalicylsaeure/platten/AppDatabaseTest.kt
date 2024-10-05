@@ -71,7 +71,7 @@ class AppDatabaseTest {
 
         // Update the exercise
         val updatedExercise = exercise.copy(name = "Updated Bench Press")
-        exerciseDao.insertExercise(updatedExercise)
+        exerciseDao.updateExercise(updatedExercise)
 
         // Retrieve and verify the updated exercise
         val updatedExercises = exerciseDao.getAllExercises().first()
