@@ -1,6 +1,7 @@
 # custom
 .gradle
 .idea
+.env
 
 # Compiled class file
 *.class
