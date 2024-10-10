@@ -29,7 +29,6 @@ import com.acetylsalicylsaeure.platten.viewmodel.ExerciseViewModel
 import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,15 +45,16 @@ fun ExerciseDetailScreen(
     val viewWindow by preferences.viewWindowFlow.collectAsState(initial = 0)
     val weightedRegression by viewModel.weightedRegressionFlow.collectAsState(initial = false)
     val regressionWindow by viewModel.regressionWindowFlow.collectAsState(initial = 0)
-    val fitToLastSession by preferences.fitToLastSessionFlow.collectAsState(initial = true)
 
     var showEditDialog by remember { mutableStateOf(false) }
     var selectedLog by remember { mutableStateOf<ExerciseLog?>(null) }
 
-    val regression by remember(logs.value, weightedRegression, regressionWindow) {
+    val fitToLastSession by preferences.fitToLastSessionFlow.collectAsState(initial = true)
+
+    val regression by remember(logs.value, weightedRegression, regressionWindow, fitToLastSession) {
         derivedStateOf {
             if (logs.value.size >= 2) {
-                viewModel.calculateLinearRegression(logs.value, weightedRegression, regressionWindow)
+                viewModel.calculateLinearRegression(logs.value, weightedRegression, regressionWindow, fitToLastSession)
             } else {
                 null
             }
@@ -66,8 +66,8 @@ fun ExerciseDetailScreen(
     var reps by remember(lastLog) { mutableStateOf(lastLog?.reps?.toString() ?: "") }
 
     val predictedOneRM = remember(logs.value, regression, fitToLastSession) {
-        regression?.let { (slope, intercept) ->
-            val x = if (fitToLastSession) logs.value.size.toDouble() else (logs.value.size + 1).toDouble()
+        regression?.let { (slope, intercept, adjustment) ->
+            val x = logs.value.size.toDouble()
             slope * x + intercept
         }
     }

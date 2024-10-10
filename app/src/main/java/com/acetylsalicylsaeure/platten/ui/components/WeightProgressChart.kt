@@ -1,6 +1,5 @@
 package com.acetylsalicylsaeure.platten.ui.components
 
-import android.graphics.Color
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,7 +26,7 @@ import kotlin.math.roundToInt
 fun WeightProgressChart(
     logs: List<Triple<Int, Float, Int>>,
     viewWindow: Int,
-    regression: Pair<Double, Double>?,
+    regression: Triple<Double, Double, Double>?,
     fitToLastSession: Boolean
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
@@ -90,18 +89,10 @@ fun WeightProgressChart(
                 combinedData.setData(scatterData)
 
                 // Add linear regression if available
-                regression?.let { (slope, intercept) ->
-                    var adjustment = 0f
-                    if (fitToLastSession && entries.isNotEmpty()) {
-                        val lastIndex = entries.size - 1
-                        val lastActualValue = entries.last().y
-                        val lastPredictedValue = (slope * lastIndex + intercept).toFloat()
-                        adjustment = lastActualValue - lastPredictedValue
-                    }
-
+                regression?.let { (slope, intercept, adjustment) ->
                     val regressionEntries = entries.mapIndexed { index, _ ->
-                        val y = (slope * index + intercept).toFloat() + adjustment
-                        Entry(index.toFloat(), y)
+                        val y = slope * index + intercept
+                        Entry(index.toFloat(), y.toFloat())
                     }
 
                     val regressionDataSet = LineDataSet(regressionEntries, "Regression").apply {

@@ -118,7 +118,13 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
     // regression part
 
 
-    fun calculateLinearRegression(logs: List<ExerciseLog>, weightedRegression: Boolean, regressionWindow: Int): Pair<Double, Double>? {
+
+    fun calculateLinearRegression(
+        logs: List<ExerciseLog>,
+        weightedRegression: Boolean,
+        regressionWindow: Int,
+        fitToLastSession: Boolean
+    ): Triple<Double, Double, Double>? {
         if (logs.isEmpty()) return null
 
         val filteredLogs = if (regressionWindow > 0) {
@@ -147,8 +153,20 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
         }
 
         val slope = (sumWeights * sumXY - sumX * sumY) / (sumWeights * sumX2 - sumX * sumX)
-        val intercept = (sumY - slope * sumX) / sumWeights
+        var intercept = (sumY - slope * sumX) / sumWeights
 
-        return Pair(slope, intercept)
+        val lastX = (n - 1).toDouble()
+        val lastY = calculateEstimatedOneRM(filteredLogs.last().weight, filteredLogs.last().reps)
+        val lastPredictedY = slope * lastX + intercept
+
+        val adjustment = if (fitToLastSession) {
+            lastY - lastPredictedY
+        } else {
+            0.0
+        }
+
+        intercept += adjustment
+
+        return Triple(slope, intercept, adjustment)
     }
 }
