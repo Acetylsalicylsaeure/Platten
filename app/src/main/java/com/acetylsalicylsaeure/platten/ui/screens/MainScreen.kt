@@ -1,5 +1,7 @@
 package com.acetylsalicylsaeure.platten.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +24,7 @@ import com.acetylsalicylsaeure.platten.data.Exercise
 import com.acetylsalicylsaeure.platten.ui.components.ExerciseItem
 import com.acetylsalicylsaeure.platten.viewmodel.ExerciseViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = viewModel()) {
@@ -166,6 +169,7 @@ fun EditExerciseDialog(
 
     var name by remember { mutableStateOf(exercise.name) }
     var weightSteps by remember { mutableStateOf(exercise.weightSteps.toString()) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -226,7 +230,7 @@ fun EditExerciseDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Button(
-                        onClick = onDelete,
+                        onClick = { showDeleteConfirmation = true },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     ) {
                         Text("Delete")
@@ -244,5 +248,29 @@ fun EditExerciseDialog(
                 }
             }
         }
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Confirm Deletion") },
+            text = { Text("Are you sure you want to delete this exercise? This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDelete()
+                        showDeleteConfirmation = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDeleteConfirmation = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
