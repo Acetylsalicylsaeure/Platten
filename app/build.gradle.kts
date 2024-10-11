@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.acetylsalicylsaeure.platten"
+        applicationId = "com.acetylsalicylsaeure.plattenPro"
         minSdk = 24
         targetSdk = 34
         versionCode = 4
