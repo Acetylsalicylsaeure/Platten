@@ -87,6 +87,10 @@ fun PlattenTheme(
     val context = LocalContext.current
     val preferences = Preferences(context)
     val isDarkMode by preferences.darkModeFlow.collectAsState(initial = isSystemInDarkTheme())
+    if (isDarkMode == null) {
+        // Display a loading indicator or splash screen
+        return
+    }
     val useDynamicColor by preferences.dynamicColorFlow.collectAsState(initial = true)
 
     val colorScheme = when {
