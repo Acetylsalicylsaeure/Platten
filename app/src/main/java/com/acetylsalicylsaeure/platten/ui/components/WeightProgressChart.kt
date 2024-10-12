@@ -163,5 +163,11 @@ fun adjustWeightForReps(oneRM: Float, targetReps: Int): Float {
 }
 
 fun roundToNearestWeightStep(weight: Float, weightStep: Double): Float {
+    if (weight.isNaN()) {
+        return 0f // Return 1 as the default value if input is invalid
+    }
+    if (weightStep.isNaN() || weightStep == 0.0) {
+        return weight
+    }
     return (weight / weightStep).roundToInt() * weightStep.toFloat()
 }

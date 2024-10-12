@@ -83,7 +83,11 @@ fun ExerciseDetailScreen(
         mutableStateOf(
             calculatedWeight?.let { w ->
                 val weightStep = exercise.value?.weightSteps ?: 1.0
-                roundToNearestWeightStep(w, weightStep).toString()
+                if (w.isFinite() && weightStep > 0) {
+                    roundToNearestWeightStep(w, weightStep).toString()
+                } else {
+                    lastLog?.weight?.toString() ?: ""
+                }
             } ?: lastLog?.weight?.toString() ?: ""
         )
     }
