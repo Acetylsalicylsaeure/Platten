@@ -3,291 +3,86 @@ package com.acetylsalicylsaeure.platten.ui.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.acetylsalicylsaeure.platten.data.Exercise
-import com.acetylsalicylsaeure.platten.ui.components.ExerciseItem
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acetylsalicylsaeure.platten.viewmodel.ExerciseViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import com.acetylsalicylsaeure.platten.viewmodel.WorkoutViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = viewModel()) {
-    val sortedExercisesWithLastTrained by viewModel.sortedExercisesWithLastTrained.collectAsState()
-    var showAddExerciseDialog by remember { mutableStateOf(false) }
-    var showEditDialog by remember { mutableStateOf(false) }
-    var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
+    var selectedTabIndex by remember { mutableStateOf(0) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Exercises") },
+                title = {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            onClick = { selectedTabIndex = 0 },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selectedTabIndex == 0)
+                                    MaterialTheme.colorScheme.secondaryContainer
+                                else MaterialTheme.colorScheme.surface,
+                                contentColor = if (selectedTabIndex == 0)
+                                    MaterialTheme.colorScheme.onSecondaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text("Exercises")
+                        }
+                        Button(
+                            onClick = { selectedTabIndex = 1 },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selectedTabIndex == 1)
+                                    MaterialTheme.colorScheme.secondaryContainer
+                                else MaterialTheme.colorScheme.surface,
+                                contentColor = if (selectedTabIndex == 1)
+                                    MaterialTheme.colorScheme.onSecondaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        ) {
+                            Text("Workouts")
+                        }
+                    }
+                },
                 actions = {
                     IconButton(onClick = { navController.navigate("settings") }) {
                         Icon(Icons.Filled.Settings, contentDescription = "Settings")
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddExerciseDialog = true }
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Exercise")
-            }
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            if (sortedExercisesWithLastTrained.isEmpty()) {
-                Text(
-                    text = "Click the + button to add an exercise!",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(sortedExercisesWithLastTrained) { (exercise, lastTrainedDate) ->
-                        ExerciseItem(
-                            exercise = exercise,
-                            lastTrainedDate = lastTrainedDate,
-                            onClick = { navController.navigate("exercise/${exercise.id}") },
-                            onLongClick = {
-                                selectedExercise = exercise
-                                showEditDialog = true
-                            }
-                        )
-                    }
-                }
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when (selectedTabIndex) {
+                0 -> ExercisesTab(navController, viewModel)
+                1 -> WorkoutsTab(navController)
             }
         }
-    }
-
-    if (showAddExerciseDialog) {
-        AddExerciseDialog(
-            onDismiss = { showAddExerciseDialog = false },
-            onConfirm = { name, weightSteps ->
-                viewModel.addExercise(name, weightSteps)
-                showAddExerciseDialog = false
-            }
-        )
-    }
-
-    if (showEditDialog) {
-        EditExerciseDialog(
-            exercise = selectedExercise,
-            onDismiss = { showEditDialog = false },
-            onSave = { updatedExercise ->
-                viewModel.updateExercise(updatedExercise)
-                showEditDialog = false
-            },
-            onDelete = {
-                selectedExercise?.let { exercise ->
-                    viewModel.deleteExercise(exercise)
-                    showEditDialog = false
-                }
-            },
-            onHide = { id ->
-                viewModel.setExerciseHidden(id, true)
-                showEditDialog = false
-            }
-        )
     }
 }
 
-
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddExerciseDialog(onDismiss: () -> Unit, onConfirm: (String, Double) -> Unit) {
-    var exerciseName by remember { mutableStateOf("") }
-    var weightSteps by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add New Exercise") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = exerciseName,
-                    onValueChange = { exerciseName = it },
-                    label = { Text("Exercise Name") }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = weightSteps,
-                    onValueChange = { weightSteps = it },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    label = { Text("Weight Steps") }
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val steps = weightSteps.toDoubleOrNull() ?: 0.0
-                    onConfirm(exerciseName, steps)
-                }
-            ) {
-                Text("Add")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
+fun ExercisesTab(navController: NavController, viewModel: ExerciseViewModel) {
+    ExercisesScreen(navController, viewModel)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditExerciseDialog(
-    exercise: Exercise?,
-    onDismiss: () -> Unit,
-    onSave: (Exercise) -> Unit,
-    onDelete: () -> Unit,
-    onHide: (Int) -> Unit
-) {
-    if (exercise == null) return
-
-    var name by remember { mutableStateOf(exercise.name) }
-    var weightSteps by remember { mutableStateOf(exercise.weightSteps.toString()) }
-    var showDeleteConfirmation by remember { mutableStateOf(false) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = MaterialTheme.shapes.large,
-            tonalElevation = 2.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-            ) {
-                // Top app bar with back arrow
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                    Text(
-                        "Edit Exercise",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Exercise name input
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Exercise Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Weight steps input
-                OutlinedTextField(
-                    value = weightSteps,
-                    onValueChange = { weightSteps = it },
-                    label = { Text("Weight Steps") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Action buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row {
-                        Button(
-                            onClick = { showDeleteConfirmation = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                        ) {
-                            Text("Delete")
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = {
-                                onHide(exercise.id)
-                                onDismiss()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                        ) {
-                            Text("Hide")
-                        }
-                    }
-                    Button(
-                        onClick = {
-                            onSave(exercise.copy(
-                                name = name,
-                                weightSteps = weightSteps.toDoubleOrNull() ?: exercise.weightSteps
-                            ))
-                        }
-                    ) {
-                        Text("Save")
-                    }
-                }
-            }
-        }
-    }
-
-    if (showDeleteConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Confirm Deletion") },
-            text = { Text("Are you sure you want to delete this exercise? This action cannot be undone.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDelete()
-                        showDeleteConfirmation = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDeleteConfirmation = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
+fun WorkoutsTab(navController: NavController, viewModel: WorkoutViewModel = viewModel()) {
+    WorkoutsScreen(navController, viewModel)
 }
