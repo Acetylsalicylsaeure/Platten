@@ -22,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.acetylsalicylsaeure.platten.data.ExerciseLog
 import com.acetylsalicylsaeure.platten.data.Preferences
+import com.acetylsalicylsaeure.platten.ui.components.Quadruple
 import com.acetylsalicylsaeure.platten.ui.components.WeightProgressChart
 import com.acetylsalicylsaeure.platten.ui.components.adjustWeightForReps
 import com.acetylsalicylsaeure.platten.ui.components.roundToNearestWeightStep
@@ -202,7 +203,7 @@ fun ExerciseDetailScreen(
                             .padding(vertical = 8.dp)
                     ) {
                         WeightProgressChart(
-                            logs = logs.value.map { Triple(it.exerciseId, it.weight, it.reps) },
+                            logs = logs.value.map { Quadruple(it.exerciseId, it.weight, it.reps, it.date) },
                             viewWindow = viewWindow,
                             regression = regression,
                             fitToLastSession = fitToLastSession
