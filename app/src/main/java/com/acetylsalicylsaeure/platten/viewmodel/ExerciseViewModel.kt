@@ -22,8 +22,10 @@ import com.acetylsalicylsaeure.platten.ui.components.calculateEstimatedOneRM
 class ExerciseViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: ExerciseRepository
     private val preferences: Preferences
-    val exercises: StateFlow<List<Exercise>>
     val sortedExercisesWithLastTrained: StateFlow<List<Pair<Exercise, Date?>>>
+
+    val exercises: StateFlow<List<Exercise>>  // This will be visible exercises only
+    val allExercises: StateFlow<List<Exercise>>  // This will be all exercises including hidden ones
 
     val weightedRegressionFlow: Flow<Boolean>
     val regressionWindowFlow: Flow<Int>
@@ -38,15 +40,23 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
         weightedRegressionFlow = preferences.weightedRegressionFlow
         regressionWindowFlow = preferences.regressionWindowFlow
 
-        exercises = repository.allExercises.stateIn(
+        // Change this to use visibleExercises
+        exercises = repository.visibleExercises.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             emptyList()
         )
 
+        // Keep this for accessing all exercises including hidden ones
+        allExercises = repository.allExercises.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
 
+        // Update this to use exercises (which now contains only visible ones)
         sortedExercisesWithLastTrained = combine(
-            exercises,
+            exercises,  // This now uses visible exercises only
             repository.getLastTrainedDates()
         ) { exerciseList, lastTrainedDates ->
             exerciseList.map { exercise ->
@@ -57,6 +67,12 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
             SharingStarted.WhileSubscribed(5000),
             emptyList()
         )
+    }
+
+    fun setExerciseHidden(id: Int, hidden: Boolean) {
+        viewModelScope.launch {
+            repository.setExerciseHidden(id, hidden)
+        }
     }
 
     fun addExercise(name: String, weightSteps: Double) {

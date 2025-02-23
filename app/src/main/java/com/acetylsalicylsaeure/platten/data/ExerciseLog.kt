@@ -2,6 +2,7 @@ package com.acetylsalicylsaeure.platten.data
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.util.Date
 
@@ -12,7 +13,8 @@ import java.util.Date
         parentColumns = ["id"],
         childColumns = ["exerciseId"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    indices = [Index("exerciseId")]  // Add this line
 )
 data class ExerciseLog(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

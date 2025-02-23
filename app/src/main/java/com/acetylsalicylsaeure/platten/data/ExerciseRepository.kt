@@ -8,6 +8,7 @@ class ExerciseRepository(
     private val exerciseDao: ExerciseDao,
     private val exerciseLogDao: ExerciseLogDao
 ) {
+    val visibleExercises: Flow<List<Exercise>> = exerciseDao.getVisibleExercises()
     val allExercises: Flow<List<Exercise>> = exerciseDao.getAllExercises()
 
     suspend fun insertExercise(exercise: Exercise): Long {
@@ -46,5 +47,9 @@ class ExerciseRepository(
         return exerciseLogDao.getLastTrainedDates().map { logs ->
             logs.associate { it.exerciseId to it.lastTrainedDate }
         }
+    }
+
+    suspend fun setExerciseHidden(id: Int, hidden: Boolean) {
+        exerciseDao.updateExerciseHidden(id, hidden)
     }
 }

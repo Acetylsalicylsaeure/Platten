@@ -45,6 +45,10 @@ fun SettingsScreen(navController: NavController) {
                 onClick = { navController.navigate("settings/backup-restore") }
             )
             // Add more settings items here as needed
+            SettingsItem(
+                title = "Hidden Exercises",
+                onClick = { navController.navigate("settings/hidden-exercises") }
+            )
         }
     }
 }

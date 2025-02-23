@@ -8,5 +8,6 @@ import androidx.room.ColumnInfo
 data class Exercise(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    @ColumnInfo(name = "weight_steps") val weightSteps: Double
+    @ColumnInfo(name = "weight_steps") val weightSteps: Double,
+    @ColumnInfo(name = "hidden") val hidden: Boolean = false
 )

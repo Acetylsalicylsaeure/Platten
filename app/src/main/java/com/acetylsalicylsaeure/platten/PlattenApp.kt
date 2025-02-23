@@ -1,5 +1,7 @@
 package com.acetylsalicylsaeure.platten
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
@@ -13,10 +15,12 @@ import com.acetylsalicylsaeure.platten.ui.screens.SettingsScreen
 import com.acetylsalicylsaeure.platten.ui.screens.ColorSettingsScreen
 import com.acetylsalicylsaeure.platten.ui.screens.ExerciseDetailScreen
 import com.acetylsalicylsaeure.platten.ui.screens.ExercisesSettingsScreen
+import com.acetylsalicylsaeure.platten.ui.screens.ManageHiddenExercisesScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PlattenApp() {
     val navController = rememberNavController()
@@ -40,5 +44,6 @@ fun PlattenApp() {
             val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull() ?: return@composable
             ExerciseDetailScreen(navController, exerciseId)
         }
+        composable("settings/hidden-exercises") { ManageHiddenExercisesScreen(navController) }
     }
 }
