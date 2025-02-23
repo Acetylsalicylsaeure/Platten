@@ -143,10 +143,13 @@ class ExerciseViewModel(application: Application) : AndroidViewModel(application
     ): Triple<Double, Double, Double>? {
         if (logs.isEmpty()) return null
 
+        // First sort logs by date
+        val sortedLogs = logs.sortedBy { it.date }
+
         val filteredLogs = if (regressionWindow > 0) {
-            logs.takeLast(regressionWindow)
+            sortedLogs.takeLast(regressionWindow)
         } else {
-            logs
+            sortedLogs
         }
 
         val n = filteredLogs.size

@@ -20,11 +20,14 @@ import com.github.mikephil.charting.data.ScatterDataSet
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.data.CombinedData;
 import com.github.mikephil.charting.data.LineData
+import java.util.Date
 import kotlin.math.roundToInt
+
+data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 
 @Composable
 fun WeightProgressChart(
-    logs: List<Triple<Int, Float, Int>>,
+    logs: List<Quadruple<Int, Float, Int, Date>>,
     viewWindow: Int,
     regression: Triple<Double, Double, Double>?,
     fitToLastSession: Boolean
@@ -32,6 +35,12 @@ fun WeightProgressChart(
     val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
     val secondaryColor = MaterialTheme.colorScheme.secondary.toArgb()
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val sortedLogs = logs.sortedBy { it.fourth }  // Sort by date
+    val filteredLogs = if (viewWindow > 0 && viewWindow < sortedLogs.size) {
+        sortedLogs.takeLast(viewWindow)
+    } else {
+        sortedLogs
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
@@ -66,13 +75,7 @@ fun WeightProgressChart(
                 }
             },
             update = { chart ->
-                val filteredLogs = if (viewWindow > 0 && viewWindow < logs.size) {
-                    logs.takeLast(viewWindow)
-                } else {
-                    logs
-                }
-
-                val entries = filteredLogs.mapIndexed { index, (_, weight, reps) ->
+                val entries = filteredLogs.mapIndexed { index, (_, weight, reps, _) ->
                     val estimatedOneRM = calculateEstimatedOneRM(weight, reps)
                     Entry(index.toFloat(), estimatedOneRM)
                 }
