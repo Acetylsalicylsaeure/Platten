@@ -109,6 +109,10 @@ fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = view
                     viewModel.deleteExercise(exercise)
                     showEditDialog = false
                 }
+            },
+            onHide = { id ->
+                viewModel.setExerciseHidden(id, true)
+                showEditDialog = false
             }
         )
     }
@@ -163,7 +167,8 @@ fun EditExerciseDialog(
     exercise: Exercise?,
     onDismiss: () -> Unit,
     onSave: (Exercise) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onHide: (Int) -> Unit
 ) {
     if (exercise == null) return
 
@@ -229,11 +234,23 @@ fun EditExerciseDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Button(
-                        onClick = { showDeleteConfirmation = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text("Delete")
+                    Row {
+                        Button(
+                            onClick = { showDeleteConfirmation = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Delete")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                onHide(exercise.id)
+                                onDismiss()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        ) {
+                            Text("Hide")
+                        }
                     }
                     Button(
                         onClick = {
