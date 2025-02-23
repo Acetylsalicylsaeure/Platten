@@ -84,5 +84,5 @@ fun ExercisesTab(navController: NavController, viewModel: ExerciseViewModel) {
 
 @Composable
 fun WorkoutsTab(navController: NavController, viewModel: WorkoutViewModel = viewModel()) {
-    WorkoutsScreen(navController, viewModel)
+    WorkoutScreen(navController, viewModel)
 }

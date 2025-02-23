@@ -1,6 +1,7 @@
 package com.acetylsalicylsaeure.platten.ui.screens
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,10 +20,13 @@ import com.acetylsalicylsaeure.platten.viewmodel.WorkoutViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WorkoutsScreen(navController: NavController, viewModel: WorkoutViewModel = viewModel()) {
+fun WorkoutScreen(navController: NavController, viewModel: WorkoutViewModel = viewModel()) {
     val workouts by viewModel.workouts.collectAsState()
     var showAddWorkoutDialog by remember { mutableStateOf(false) }
+    var selectedWorkout by remember { mutableStateOf<Workout?>(null) }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (workouts.isEmpty()) {
@@ -39,15 +43,43 @@ fun WorkoutsScreen(navController: NavController, viewModel: WorkoutViewModel = v
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(workouts) { workoutWithExercises ->
-                    WorkoutItem(
-                        workout = workoutWithExercises.workout,
-                        exerciseCount = workoutWithExercises.exercises.size,
-                        onClick = {
-                            viewModel.updateLastViewed(workoutWithExercises.workout)
-                            // TODO: Navigate to workout detail screen
-                            // navController.navigate("workout/${workoutWithExercises.workout.id}")
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .combinedClickable(
+                                onClick = { navController.navigate("workout/${workoutWithExercises.workout.id}") },
+                                onLongClick = {
+                                    selectedWorkout = workoutWithExercises.workout
+                                    showEditDialog = true
+                                }
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = workoutWithExercises.workout.name,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = formatLastViewed(workoutWithExercises.workout.lastViewed),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "${workoutWithExercises.exercises.size} exercises",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                    )
+                    }
                 }
             }
         }
@@ -71,44 +103,62 @@ fun WorkoutsScreen(navController: NavController, viewModel: WorkoutViewModel = v
             }
         )
     }
-}
 
-@Composable
-fun WorkoutItem(
-    workout: Workout,
-    exerciseCount: Int,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+    if (showEditDialog && selectedWorkout != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showEditDialog = false
+                selectedWorkout = null
+            },
+            title = { Text("Edit Workout") },
+            text = {
+                var name by remember { mutableStateOf(selectedWorkout!!.name) }
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Workout Name") }
+                )
+            },
+            confirmButton = {
+                Row {
+                    TextButton(
+                        onClick = {
+                            selectedWorkout?.let { workout ->
+                                viewModel.deleteWorkout(workout)
+                            }
+                            showEditDialog = false
+                            selectedWorkout = null
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text("Delete")
+                    }
+                    TextButton(
+                        onClick = {
+                            selectedWorkout?.let { workout ->
+                                viewModel.renameWorkout(workout.id, workout.name)
+                            }
+                            showEditDialog = false
+                            selectedWorkout = null
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showEditDialog = false
+                        selectedWorkout = null
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
         )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(16.dp)
-        ) {
-            Text(
-                text = workout.name,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = formatLastViewed(workout.lastViewed),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "$exerciseCount exercises",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
 
@@ -145,7 +195,7 @@ fun AddWorkoutDialog(
     )
 }
 
-fun formatLastViewed(date: Date): String {
+private fun formatLastViewed(date: Date): String {
     val now = Calendar.getInstance()
     val lastViewed = Calendar.getInstance().apply { time = date }
 

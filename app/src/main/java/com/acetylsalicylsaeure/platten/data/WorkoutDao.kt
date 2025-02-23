@@ -31,7 +31,7 @@ interface WorkoutDao {
     suspend fun getMaxOrderPosition(workoutId: Int): Int?
 
     @Query("SELECT * FROM workouts WHERE id = :workoutId")
-    fun getWorkoutById(workoutId: Int): Flow<Workout?>
+    suspend fun getWorkoutById(workoutId: Int): Workout?
 
     @Transaction
     @Query("SELECT * FROM workouts WHERE id = :workoutId")

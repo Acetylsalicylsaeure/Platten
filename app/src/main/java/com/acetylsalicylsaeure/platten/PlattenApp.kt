@@ -16,6 +16,8 @@ import com.acetylsalicylsaeure.platten.ui.screens.ColorSettingsScreen
 import com.acetylsalicylsaeure.platten.ui.screens.ExerciseDetailScreen
 import com.acetylsalicylsaeure.platten.ui.screens.ExercisesSettingsScreen
 import com.acetylsalicylsaeure.platten.ui.screens.ManageHiddenExercisesScreen
+import com.acetylsalicylsaeure.platten.ui.screens.WorkoutDetailScreen
+import com.acetylsalicylsaeure.platten.ui.screens.WorkoutScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,5 +47,13 @@ fun PlattenApp() {
             ExerciseDetailScreen(navController, exerciseId)
         }
         composable("settings/hidden-exercises") { ManageHiddenExercisesScreen(navController) }
+        composable("settings/hidden-exercises") { ManageHiddenExercisesScreen(navController) }
+        composable("workout/{workoutId}") { backStackEntry ->
+            val workoutId = backStackEntry.arguments?.getString("workoutId")?.toIntOrNull() ?: return@composable
+            WorkoutDetailScreen(navController, workoutId)
+        }
+        composable("workouts") {
+            WorkoutScreen(navController)
+        }
     }
 }

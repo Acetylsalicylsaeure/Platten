@@ -1,6 +1,7 @@
 package com.acetylsalicylsaeure.platten.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import java.util.Date
 
 class WorkoutRepository(private val workoutDao: WorkoutDao) {
@@ -33,6 +34,12 @@ class WorkoutRepository(private val workoutDao: WorkoutDao) {
 
     suspend fun updateWorkoutLastViewed(workout: Workout) {
         workoutDao.updateWorkout(workout.copy(lastViewed = Date()))
+    }
+
+    suspend fun renameWorkout(workoutId: Int, newName: String) {
+        workoutDao.getWorkoutById(workoutId)?.let { workout ->
+            workoutDao.updateWorkout(workout.copy(name = newName))
+        }
     }
 
     fun getWorkoutWithExercises(workoutId: Int): Flow<WorkoutWithExercises?> {
