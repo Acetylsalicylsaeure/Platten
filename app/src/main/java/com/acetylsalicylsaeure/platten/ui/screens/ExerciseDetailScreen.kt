@@ -37,6 +37,7 @@ import java.util.Locale
 fun ExerciseDetailScreen(
     navController: NavController,
     exerciseId: Int,
+    onBackPressed: () -> Unit,
     viewModel: ExerciseViewModel = viewModel()
 ) {
     val exercise = viewModel.getExerciseById(exerciseId).collectAsState(initial = null)
@@ -98,7 +99,7 @@ fun ExerciseDetailScreen(
             TopAppBar(
                 title = { Text(exercise.value?.name ?: "Exercise Details") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = onBackPressed) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }

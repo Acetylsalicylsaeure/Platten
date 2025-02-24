@@ -13,13 +13,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acetylsalicylsaeure.platten.viewmodel.ExerciseViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import com.acetylsalicylsaeure.platten.navigation.NavigationState
 import com.acetylsalicylsaeure.platten.viewmodel.WorkoutViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(navController: NavController, viewModel: ExerciseViewModel = viewModel()) {
-    var selectedTabIndex by remember { mutableStateOf(0) }
+fun MainScreen(
+    navController: NavController,
+    viewModel: ExerciseViewModel = viewModel(),
+    navigationState: NavigationState
+) {
+    var selectedTabIndex by remember { mutableStateOf(navigationState.activeTab) }
+
+    // Update the navigation state when tab changes
+    LaunchedEffect(selectedTabIndex) {
+        navigationState.onTabChanged(selectedTabIndex)
+    }
+
+    // Track that we're on the main screen
+    LaunchedEffect(Unit) {
+        navigationState.onScreenChanged("main")
+    }
 
     Scaffold(
         topBar = {

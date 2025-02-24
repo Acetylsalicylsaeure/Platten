@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.acetylsalicylsaeure.platten.data.Exercise
+import com.acetylsalicylsaeure.platten.navigation.NavigationState
 import com.acetylsalicylsaeure.platten.ui.components.ExerciseItem
 import com.acetylsalicylsaeure.platten.viewmodel.WorkoutViewModel
 import java.util.Date
@@ -27,6 +28,8 @@ import java.util.Date
 fun WorkoutDetailScreen(
     navController: NavController,
     workoutId: Int,
+    navigationState: NavigationState,
+    onBackPressed: () -> Unit,
     viewModel: WorkoutViewModel = viewModel()
 ) {
     var showAddExerciseDialog by remember { mutableStateOf(false) }
@@ -51,7 +54,7 @@ fun WorkoutDetailScreen(
             TopAppBar(
                 title = { Text(workoutWithExercises?.workout?.name ?: "Workout Details") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = onBackPressed) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -85,6 +88,8 @@ fun WorkoutDetailScreen(
                             exercise = exercise,
                             lastTrainedDate = lastTrainedDates[exercise.id],
                             onClick = {
+                                // Save workout as the source before navigating to exercise detail
+                                navigationState.onScreenChanged("workout/$workoutId")
                                 navController.navigate("exercise/${exercise.id}")
                             },
                             onLongClick = {
