@@ -55,6 +55,7 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.room:room-testing:2.6.1")
     implementation("androidx.documentfile:documentfile:1.0.1")
+    implementation("androidx.navigation:navigation-testing:2.8.7")
     val navVersion = "2.7.7"
 
     implementation("androidx.core:core-ktx:1.13.1")
