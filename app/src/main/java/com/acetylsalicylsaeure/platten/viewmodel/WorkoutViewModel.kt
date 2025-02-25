@@ -71,4 +71,13 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
     fun getLastTrainedDates(): Flow<Map<Int, Date?>> {
         return exerciseRepository.getLastTrainedDates()
     }
+
+    fun updateWorkoutTimestamp(workoutId: Int) {
+        viewModelScope.launch {
+            // Get the workout, update its timestamp, and save it back
+            repository.getWorkoutById(workoutId)?.let { workout ->
+                repository.updateWorkoutLastViewed(workout.copy(lastViewed = Date()))
+            }
+        }
+    }
 }
