@@ -36,6 +36,11 @@ fun WorkoutDetailScreen(
     var selectedExercise by remember { mutableStateOf<Exercise?>(null) }
     var showRemoveDialog by remember { mutableStateOf(false) }
 
+    // Update lastViewed directly based on workoutId
+    LaunchedEffect(workoutId) {
+        viewModel.updateWorkoutTimestamp(workoutId)
+    }
+
     val workoutWithExercises by viewModel.getWorkoutWithExercises(workoutId).collectAsState(initial = null)
     val availableExercises by viewModel.getAllExercises().collectAsState(initial = emptyList())
     val lastTrainedDates by viewModel.getLastTrainedDates().collectAsState(initial = emptyMap())
