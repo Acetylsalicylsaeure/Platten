@@ -80,4 +80,10 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
             }
         }
     }
+
+    fun updateExerciseOrder(workoutId: Int, exercises: List<Exercise>) {
+        viewModelScope.launch {
+            repository.updateExerciseOrder(workoutId, exercises)
+        }
+    }
 }

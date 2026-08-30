@@ -49,4 +49,15 @@ class WorkoutRepository(private val workoutDao: WorkoutDao) {
     suspend fun getWorkoutById(workoutId: Int): Workout? {
         return workoutDao.getWorkoutById(workoutId)
     }
+
+    suspend fun updateExerciseOrder(workoutId: Int, exercises: List<Exercise>) {
+        val crossRefs = exercises.mapIndexed { index, exercise ->
+            WorkoutExerciseCrossRef(
+                workoutId = workoutId,
+                exerciseId = exercise.id,
+                orderPosition = index
+            )
+        }
+        workoutDao.updateWorkoutExerciseCrossRefs(crossRefs)
+    }
 }

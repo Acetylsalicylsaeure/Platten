@@ -29,6 +29,7 @@ fun ExercisesSettingsScreen(navController: NavController) {
     val weightedRegression by themePreferences.weightedRegressionFlow.collectAsState(initial = false)
     val regressionWindow by themePreferences.regressionWindowFlow.collectAsState(initial = 0)
     val viewWindow by themePreferences.viewWindowFlow.collectAsState(initial = 0)
+    val dragAndDrop by themePreferences.dragAndDropFlow.collectAsState(initial = false)
 
     var regressionWindowInput by remember { mutableStateOf(regressionWindow.toString()) }
     var viewWindowInput by remember { mutableStateOf(viewWindow.toString()) }
@@ -130,6 +131,22 @@ fun ExercisesSettingsScreen(navController: NavController) {
                 onValueChange = { viewWindowInput = it },
                 onInfoClick = {
                     currentInfoText = "This setting controls how many of your most recent workouts are displayed on the graph. A value of 0 shows all available data."
+                    showInfoDialog = true
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SettingsSwitchWithInfo(
+                title = "Workout Drag and Drop",
+                checked = dragAndDrop,
+                onCheckedChange = {
+                    scope.launch {
+                        themePreferences.setDragAndDrop(it)
+                    }
+                },
+                onInfoClick = {
+                    currentInfoText = "Enable custom ordering of exercises within workouts. If disabled, exercises are sorted by the date they were last logged."
                     showInfoDialog = true
                 }
             )

@@ -1,17 +1,18 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.acetylsalicylsaeure.platten"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.acetylsalicylsaeure.plattenPro"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 5
         versionName = "1.1"
 
@@ -39,9 +40,6 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.5"
     }
     packaging {
         resources {

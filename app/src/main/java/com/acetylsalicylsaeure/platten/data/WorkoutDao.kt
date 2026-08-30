@@ -18,7 +18,7 @@ interface WorkoutDao {
     @Delete
     suspend fun deleteWorkout(workout: Workout)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWorkoutExerciseCrossRef(crossRef: WorkoutExerciseCrossRef)
 
     @Delete
@@ -42,4 +42,7 @@ interface WorkoutDao {
         deleteWorkout(workout)
         // Cross references will be deleted automatically due to CASCADE
     }
+
+    @Update
+    suspend fun updateWorkoutExerciseCrossRefs(crossRefs: List<WorkoutExerciseCrossRef>)
 }

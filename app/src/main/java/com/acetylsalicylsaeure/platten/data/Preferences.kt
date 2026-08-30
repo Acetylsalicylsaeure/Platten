@@ -22,6 +22,7 @@ class Preferences(private val context: Context) {
     private val WEIGHTED_REGRESSION_KEY = booleanPreferencesKey("weighted_regression")
     private val REGRESSION_WINDOW_KEY = intPreferencesKey("regression_window")
     private val VIEW_WINDOW_KEY = intPreferencesKey("view_window")
+    private val DRAG_AND_DROP_KEY = booleanPreferencesKey("drag_and_drop")
 
     val darkModeFlow: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
@@ -47,6 +48,7 @@ class Preferences(private val context: Context) {
                 preferences[DARK_MODE_KEY] = isSystemInDarkTheme()
                 preferences[FIT_TO_LAST_SESSION_KEY] = true
                 preferences[WEIGHTED_REGRESSION_KEY] = true
+                preferences[DRAG_AND_DROP_KEY] = false
                 preferences[FIRST_TIME_KEY] = false
             }
         }
@@ -77,6 +79,9 @@ class Preferences(private val context: Context) {
     val viewWindowFlow: Flow<Int> = context.dataStore.data
         .map { preferences -> preferences[VIEW_WINDOW_KEY] ?: 0 }
 
+    val dragAndDropFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences -> preferences[DRAG_AND_DROP_KEY] ?: false }
+
 
     // functions for exercise settings
     suspend fun setFitToLastSession(enabled: Boolean) {
@@ -100,6 +105,12 @@ class Preferences(private val context: Context) {
     suspend fun setViewWindow(value: Int) {
         context.dataStore.edit { preferences ->
             preferences[VIEW_WINDOW_KEY] = value
+        }
+    }
+
+    suspend fun setDragAndDrop(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[DRAG_AND_DROP_KEY] = enabled
         }
     }
 }
